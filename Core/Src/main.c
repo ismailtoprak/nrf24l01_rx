@@ -58,9 +58,7 @@ static void MX_SPI1_Init(void);
 /* USER CODE BEGIN 0 */
 uint64_t RxpipeAddrs = 0x223344AA223344AA;
 uint64_t TxpipeAddrs = 0xFE6B2840FE6B2840;
-char myRxData[50];
-char myAckPayload[32] = "Ack by STMF7!";
-uint8_t pipeAddrs[6];
+uint8_t myRxData[32];
 /* USER CODE END 0 */
 
 /**
@@ -70,7 +68,7 @@ uint8_t pipeAddrs[6];
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t nrf_status;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -96,33 +94,35 @@ int main(void)
 
 	NRF24_begin(GPIOC, GPIO_PIN_4, GPIO_PIN_5, hspi1);
 
-	NRF24_setAutoAck(true);
+//	NRF24_setAutoAck(true);
 	NRF24_setChannel(52);
 	NRF24_setPayloadSize(32);
 	NRF24_openWritingPipe(TxpipeAddrs);
 	NRF24_openReadingPipe(1, RxpipeAddrs);
 //	NRF24_enableDynamicPayloads();
-	NRF24_enableAckPayload();
+//	NRF24_enableAckPayload();
 
 	NRF24_startListening();
 
   /* USER CODE END 2 */
-	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-//	  NRF24_read_registerN(0x0A, pipeAddrs, 5);
-//	  NRF24_read_registerN(0x0A+6, pipeAddrs, 5);
-//	  nrf_status = NRF24_get_status();
+
     /* USER CODE BEGIN 3 */
 		if(NRF24_available())
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-//			HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);
 			NRF24_read(myRxData, 32);
-//			NRF24_writeAckPayload(1, myAckPayload, 32);
+			NRF24_stopListening();
+			NRF24_DelayMicroSeconds(150);
+			for(int i=0; i<32;i++) myRxData[i] = myRxData[i] + 1;
+			NRF24_write(myRxData, 32);
+			NRF24_startListening();
+			NRF24_DelayMicroSeconds(150);
 		}
   }
   /* USER CODE END 3 */
@@ -196,7 +196,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
