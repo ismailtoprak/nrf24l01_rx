@@ -1,0 +1,5 @@
+*.ld
+*.launch
+*.o
+.settings/*
+Debug/*
