@@ -1,4 +1,3 @@
-*.ld
 *.launch
 *.o
 .settings/*
